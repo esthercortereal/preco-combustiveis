@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preços de combustíveis no Brasil · 2015–2024</title>
+<meta name="description" content="Projeto G2 — análise exploratória e dashboard interativo sobre a variação dos preços de gasolina, diesel, etanol, GNV e GLP no Brasil entre 2015 e 2024.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1f23;
+    --bg-elev: #112a2f;
+    --ink: #ecefe8;
+    --ink-dim: #8ea39b;
+    --rule: #1f3a40;
+    --amber: #ffb000;
+    --amber-dim: #c88a00;
+    --green: #4ea89a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--amber); text-decoration: none; border-bottom: 1px solid rgba(255,176,0,0.35); }
+  a:hover { border-bottom-color: var(--amber); }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 28px; }
+
+  /* --- topo --- */
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 56px;
+  }
+  .meta .right { color: var(--amber); }
+
+  /* --- hero --- */
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-variation-settings: "opsz" 144;
+    font-size: clamp(42px, 7vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px 0;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber);
+    font-weight: 400;
+  }
+  .hero p.lede {
+    font-size: 19px;
+    color: var(--ink-dim);
+    max-width: 62ch;
+    margin: 0 0 48px 0;
+  }
+
+  /* --- readout de bomba de combustível --- */
+  .readout {
+    background: #060f12;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 24px 28px;
+    margin: 0 0 72px 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .readout .cell { }
+  .readout .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .readout .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--amber);
+    letter-spacing: -0.01em;
+    text-shadow: 0 0 20px rgba(255,176,0,0.15);
+  }
+  .readout .unit {
+    font-size: 13px;
+    color: var(--amber-dim);
+    margin-left: 2px;
+  }
+  @media (max-width: 640px) {
+    .readout { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .readout .value { font-size: 22px; }
+  }
+
+  /* --- seções --- */
+  section { margin: 0 0 64px 0; }
+  section h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  section p { margin: 0 0 14px 0; max-width: 68ch; }
+
+  /* --- lista de perguntas --- */
+  .perguntas {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: pergunta;
+  }
+  .perguntas li {
+    counter-increment: pergunta;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: baseline;
+  }
+  .perguntas li:last-child { border-bottom: 0; }
+  .perguntas li::before {
+    content: counter(pergunta, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  /* --- links principais --- */
+  .cta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .cta a {
+    background: var(--bg);
+    padding: 22px 20px;
+    border-bottom: none;
+    color: var(--ink);
+    display: block;
+    transition: background 0.15s;
+  }
+  .cta a:hover { background: var(--bg-elev); }
+  .cta .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .cta .v {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+  @media (max-width: 640px) {
+    .cta { grid-template-columns: 1fr; }
+  }
+
+  /* --- stack técnico --- */
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stack span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 5px 10px;
+    border: 1px solid var(--rule);
+    color: var(--ink-dim);
+    border-radius: 2px;
+  }
+
+  /* --- rodapé --- */
+  footer {
+    margin-top: 80px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  footer .mark {
+    width: 10px; height: 10px;
+    background: var(--amber);
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    box-shadow: 0 0 8px rgba(255,176,0,0.4);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .readout .value { animation: flicker 4s ease-in-out infinite; }
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    97% { opacity: 1; }
+    98% { opacity: 0.85; }
+    99% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="meta">
+    <span>Projeto G2 · Tema 11</span>
+    <span class="right">● ao vivo</span>
+  </div>
+
+  <header class="hero">
+    <h1>Como o preço do combustível <em>se move</em> por 10 anos de Brasil.</h1>
+    <p class="lede">
+      Uma leitura dos preços de gasolina, diesel, etanol, GNV e GLP entre 2015 e 2024
+      — por mês, por estado, por região — com dashboard interativo e análise exploratória
+      sobre a base simulada do dataset do curso.
+    </p>
+  </header>
+
+  <div class="readout" aria-label="indicadores do dataset">
+    <div class="cell">
+      <div class="label">registros</div>
+      <div class="value">4&#8201;440</div>
+    </div>
+    <div class="cell">
+      <div class="label">período</div>
+      <div class="value">120<span class="unit"> meses</span></div>
+    </div>
+    <div class="cell">
+      <div class="label">combustíveis</div>
+      <div class="value">05</div>
+    </div>
+    <div class="cell">
+      <div class="label">estados</div>
+      <div class="value">20<span class="unit"> UFs</span></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>O que o projeto responde</h2>
+    <ol class="perguntas">
+      <li>Como os preços de cada combustível evoluíram entre 2015 e 2024?</li>
+      <li>Quais estados concentram os preços mais altos e os mais baixos?</li>
+      <li>Qual combustível apresentou a maior variação acumulada no período?</li>
+      <li>Quais são os meses de maior oscilação de preços?</li>
+      <li>Há relação entre preço médio, inflação e cotação do petróleo?</li>
+      <li>Qual combustível é o mais volátil?</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Como está construído</h2>
+    <p>
+      O projeto tem três entregas que se complementam. O <strong>notebook</strong> faz a análise
+      exploratória completa — carga, limpeza, engenharia de atributos, KPIs e visualizações, com
+      interpretação crítica dos resultados. O <strong>dashboard Streamlit</strong> leva a mesma
+      análise para um ambiente interativo, com filtros por ano, mês, região, estado, combustível
+      e nível de preço, KPIs dinâmicos e uma camada de consulta SQL direta ao SQLite gerado em
+      runtime. Esta <strong>página</strong> é a vitrine — explica o problema e aponta para as três coisas.
+    </p>
+  </section>
+
+  <section>
+    <h2>Explorar</h2>
+    <div class="cta">
+      <a href="#" data-replace="streamlit">
+        <span class="k">→ dashboard</span>
+        <span class="v">Abrir no Streamlit</span>
+      </a>
+      <a href="notebooks/analise_precos_combustiveis.ipynb">
+        <span class="k">→ notebook</span>
+        <span class="v">Ver análise completa</span>
+      </a>
+      <a href="#" data-replace="github">
+        <span class="k">→ código</span>
+        <span class="v">Repositório no GitHub</span>
+      </a>
+    </div>
+    <p style="margin-top: 14px; font-size: 13px; color: var(--ink-dim);">
+      Substitua os dois links marcados nos atributos <code style="font-family:'JetBrains Mono',monospace;color:var(--amber);">data-replace</code> pelos endereços do seu Streamlit Cloud e do seu repositório GitHub antes de publicar.
+    </p>
+  </section>
+
+  <section>
+    <h2>Stack</h2>
+    <div class="stack">
+      <span>Python</span>
+      <span>pandas</span>
+      <span>numpy</span>
+      <span>matplotlib</span>
+      <span>seaborn</span>
+      <span>streamlit</span>
+      <span>sqlalchemy</span>
+      <span>sqlite</span>
+      <span>jupyter</span>
+      <span>github pages</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sobre a base</h2>
+    <p>
+      O dataset usado é simulado, fornecido pelo professor da disciplina. Ele cobre o período
+      de janeiro de 2015 a dezembro de 2024, com uma observação mensal por combinação de UF e
+      combustível. Preços são expressos em reais por litro, acompanhados de referências
+      econômicas (inflação, cotação do petróleo) e de uma classificação qualitativa de nível de preço.
+    </p>
+    <p>
+      Para análises com dados reais, a fonte oficial é a
+      <a href="https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis" rel="noopener">Série Histórica de Preços de Combustíveis da ANP</a>.
+      O pipeline deste projeto foi escrito para aceitar a base real com ajustes mínimos de schema.
+    </p>
+  </section>
+
+  <footer>
+    <span><span class="mark"></span>Preços de combustíveis · 2015&ndash;2024</span>
+    <span>G2 · 2026</span>
+  </footer>
+
+</div>
+</body>
+</html>
