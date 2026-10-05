@@ -290,6 +290,12 @@ st.caption(
     "Como gasolina, diesel, etanol, GNV e GLP evoluíram ao longo de uma década, "
     "comparando regiões, estados e a relação com inflação e cotação do petróleo."
 )
+st.markdown(
+"**Aluna:** Esther dos Santos Corte Real \n"
+"**Professor:** Alexandre Louzada \n"
+"**Matéria:** Linguagens de Programação\n"
+)
+
 
 aba_visao, aba_temporal, aba_regional, aba_combustivel, aba_correlacao, aba_dados = st.tabs(
     ["Visão geral", "Série temporal", "Comparação regional", "Por combustível", "Correlações", "Dados"]
