@@ -100,7 +100,6 @@ st.markdown(
       }}
       h1 {{ font-size: 2.3rem !important; margin-bottom: 0.2rem !important; }}
       h2, h3 {{ font-size: 1.35rem !important; color: {INK_SOFT} !important; margin-top: 0.4rem !important; }}
-
       /* KPIs */
       [data-testid="stMetric"] {{
         background: {BG_SOFT};
@@ -119,7 +118,6 @@ st.markdown(
         font-size: 1.6rem !important;
         color: {INK} !important;
       }}
-
       /* Abas */
       [data-testid="stTabs"] button {{
         font-family: 'Inter', sans-serif !important;
@@ -133,7 +131,6 @@ st.markdown(
       }}
       [data-baseweb="tab-highlight"] {{ background-color: {GOLD} !important; }}
       [data-baseweb="tab-border"]    {{ background-color: {RULE} !important; }}
-
       /* Sidebar */
       [data-testid="stSidebar"] {{
         background: {BG_SOFT};
@@ -144,7 +141,6 @@ st.markdown(
         color: {INK_DIM} !important;
         letter-spacing: 0.03em;
       }}
-
       /* Divisores, citações, caption */
       hr {{ border-color: {RULE} !important; margin: 1.6rem 0 !important; }}
       blockquote {{
@@ -153,7 +149,6 @@ st.markdown(
         padding-left: 1rem !important;
       }}
       [data-testid="stCaptionContainer"] p {{ color: {INK_DIM} !important; }}
-
       /* Botões */
       .stButton button, .stDownloadButton button {{
         background: transparent;
@@ -166,17 +161,14 @@ st.markdown(
         border-color: {GOLD};
         color: {GOLD};
       }}
-
       /* Info box mais discreta */
       [data-testid="stAlert"] {{
         background: {BG_SOFT};
         border: 1px solid {RULE};
         color: {INK_SOFT};
       }}
-
       /* Dataframes */
       [data-testid="stDataFrame"] {{ border: 1px solid {RULE}; border-radius: 2px; }}
-
       /* Esconde menu/rodapé padrão */
       #MainMenu, footer {{ visibility: hidden; }}
       .block-container {{ padding-top: 2.4rem; max-width: 1180px; }}
