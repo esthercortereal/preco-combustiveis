@@ -11,10 +11,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import streamlit as st
-from sqlalchemy import create_engine, text
 
 # ---------------------------------------------------------------------------
-# Configuração geral
+# Configuração
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="Preços de Combustíveis no Brasil",
@@ -42,12 +41,10 @@ REGIAO_CORES = {
 sns.set_theme(style="whitegrid", rc={"axes.spines.top": False, "axes.spines.right": False})
 
 CAMINHO_CSV_PADRAO = Path(__file__).parent / "dados" / "simulacao_precos_combustiveis_brasil.csv"
-CAMINHO_DB = Path(__file__).parent / "database" / "combustiveis.db"
-CAMINHO_DB.parent.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
-# Carga e persistência
+# Carga
 # ---------------------------------------------------------------------------
 @st.cache_data(show_spinner=False)
 def carregar_csv(caminho_ou_buffer) -> pd.DataFrame:
@@ -56,15 +53,6 @@ def carregar_csv(caminho_ou_buffer) -> pd.DataFrame:
     df["ano"] = df["ano"].astype(int)
     df["mes"] = df["mes"].astype(int)
     return df
-
-
-def persistir_sqlite(df: pd.DataFrame) -> None:
-    """Grava o dataframe em um SQLite — demonstra uso de SQLAlchemy."""
-    engine = create_engine(f"sqlite:///{CAMINHO_DB}")
-    df.to_sql("precos", engine, if_exists="replace", index=False)
-    with engine.connect() as conn:
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_data ON precos(data)"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_uf ON precos(uf)"))
 
 
 # ---------------------------------------------------------------------------
@@ -81,12 +69,6 @@ with st.sidebar:
             st.error(f"Arquivo não encontrado: {CAMINHO_CSV_PADRAO}")
             st.stop()
         df = carregar_csv(CAMINHO_CSV_PADRAO)
-
-    # grava snapshot em SQLite (silencioso)
-    try:
-        persistir_sqlite(df)
-    except Exception as e:
-        st.warning(f"Não foi possível persistir em SQLite: {e}")
 
     st.markdown("---")
     st.markdown("### Filtros")
@@ -147,16 +129,16 @@ dff = df.loc[mask].copy()
 
 
 # ---------------------------------------------------------------------------
-# Navegação multipágina
+# Cabeçalho
 # ---------------------------------------------------------------------------
 st.title("Preços de combustíveis no Brasil — 2015 a 2024")
 st.caption(
     "Como gasolina, diesel, etanol, GNV e GLP evoluíram ao longo de uma década, "
-    "comparando regiões, estados e a relação com inflação e cotação do petróleo."
+    "comparando regiões, estados e combustíveis."
 )
 
-aba_visao, aba_temporal, aba_regional, aba_combustivel, aba_correlacao, aba_dados = st.tabs(
-    ["Visão geral", "Série temporal", "Comparação regional", "Por combustível", "Correlações", "Dados"]
+aba_visao, aba_temporal, aba_regional, aba_combustivel, aba_dados = st.tabs(
+    ["Visão geral", "Série temporal", "Comparação regional", "Por combustível", "Dados"]
 )
 
 if dff.empty:
@@ -165,7 +147,7 @@ if dff.empty:
 
 
 # ---------------------------------------------------------------------------
-# Aba 1 — Visão geral (KPIs dinâmicos)
+# Aba 1 — Visão geral
 # ---------------------------------------------------------------------------
 with aba_visao:
     st.subheader("Indicadores no período filtrado")
@@ -175,7 +157,6 @@ with aba_visao:
     preco_max = dff["preco_medio"].max()
     volatilidade = dff["preco_medio"].std()
 
-    # variação ponta-a-ponta dentro do filtro
     serie_mensal = dff.groupby("data")["preco_medio"].mean().sort_index()
     variacao_pct = (serie_mensal.iloc[-1] / serie_mensal.iloc[0] - 1) * 100
 
@@ -239,7 +220,7 @@ with aba_visao:
 
 
 # ---------------------------------------------------------------------------
-# Aba 2 — Série temporal
+# Aba 2 — Série temporal (séries temporais avançadas: média móvel)
 # ---------------------------------------------------------------------------
 with aba_temporal:
     st.subheader("Evolução mensal dos preços")
@@ -257,8 +238,7 @@ with aba_temporal:
     fig.tight_layout()
     st.pyplot(fig, clear_figure=True)
 
-    st.markdown("**Média anual + média móvel de 3 meses**")
-    anual = dff.groupby("ano")["preco_medio"].mean().round(2)
+    st.markdown("**Média mensal + média móvel de 3 meses**")
     serie_total = dff.groupby("data")["preco_medio"].mean().sort_index()
     mm3 = serie_total.rolling(3, min_periods=1).mean()
 
@@ -272,6 +252,7 @@ with aba_temporal:
 
     col1, col2 = st.columns(2)
     col1.markdown("**Média anual (R$/L)**")
+    anual = dff.groupby("ano")["preco_medio"].mean().round(2)
     col1.dataframe(anual.rename("preço médio").to_frame(), use_container_width=True)
 
     col2.markdown("**Meses com maior variação (%)**")
@@ -327,7 +308,7 @@ with aba_regional:
 
 
 # ---------------------------------------------------------------------------
-# Aba 4 — Por combustível
+# Aba 4 — Por combustível (séries temporais avançadas: índice base 100)
 # ---------------------------------------------------------------------------
 with aba_combustivel:
     st.subheader("Perfil de cada combustível")
@@ -364,7 +345,7 @@ with aba_combustivel:
         st.pyplot(fig, clear_figure=True)
 
     st.markdown("---")
-    st.markdown("**Variação acumulada desde o início do período**")
+    st.markdown("**Variação acumulada desde o início do período (índice base 100)**")
     base = dff.groupby(["data", "combustivel"])["preco_medio"].mean().reset_index()
     base = base.sort_values(["combustivel", "data"])
     base["indice"] = base.groupby("combustivel")["preco_medio"].transform(lambda s: s / s.iloc[0] * 100)
@@ -381,51 +362,7 @@ with aba_combustivel:
 
 
 # ---------------------------------------------------------------------------
-# Aba 5 — Correlações
-# ---------------------------------------------------------------------------
-with aba_correlacao:
-    st.subheader("Preço × inflação × petróleo")
-
-    agg = dff.groupby("data").agg(
-        preco=("preco_medio", "mean"),
-        inflacao=("inflacao", "mean"),
-        petroleo=("cotacao_petroleo", "mean"),
-        consumo=("consumo_estimado", "mean"),
-    )
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**Matriz de correlação**")
-        fig, ax = plt.subplots(figsize=(5, 4))
-        sns.heatmap(agg.corr().round(2), annot=True, cmap="RdBu_r",
-                    vmin=-1, vmax=1, center=0, ax=ax)
-        fig.tight_layout()
-        st.pyplot(fig, clear_figure=True)
-
-    with col2:
-        st.markdown("**Preço médio × cotação do petróleo**")
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.scatter(agg["petroleo"], agg["preco"], alpha=0.5, color="#e85d04", s=25)
-        ax.set_xlabel("Cotação do petróleo (US$)")
-        ax.set_ylabel("Preço médio (R$/L)")
-        if len(agg) > 1:
-            m, b = np.polyfit(agg["petroleo"], agg["preco"], 1)
-            xs = np.linspace(agg["petroleo"].min(), agg["petroleo"].max(), 50)
-            ax.plot(xs, m * xs + b, color="#264653", linewidth=1.2, linestyle="--",
-                    label=f"ajuste linear (r = {agg['petroleo'].corr(agg['preco']):.2f})")
-            ax.legend(frameon=False)
-        fig.tight_layout()
-        st.pyplot(fig, clear_figure=True)
-
-    st.info(
-        "Como são dados **simulados**, as correlações entre preço, inflação e petróleo "
-        "ficam próximas de zero. Em uma base real (ANP + IBGE + EIA), o esperado é correlação "
-        "positiva relevante entre petróleo e preço do diesel/gasolina."
-    )
-
-
-# ---------------------------------------------------------------------------
-# Aba 6 — Dados brutos
+# Aba 5 — Dados brutos
 # ---------------------------------------------------------------------------
 with aba_dados:
     st.subheader("Tabela filtrada")
@@ -440,41 +377,21 @@ with aba_dados:
         mime="text/csv",
     )
 
-    with st.expander("Consulta SQL ao SQLite gerado"):
-        st.caption(f"Banco em `{CAMINHO_DB.name}`, tabela `precos`.")
-        query = st.text_area(
-            "SQL",
-            value="SELECT uf, combustivel, ROUND(AVG(preco_medio),2) AS media\n"
-                  "FROM precos GROUP BY uf, combustivel ORDER BY media DESC LIMIT 15;",
-            height=120,
-        )
-        if st.button("Executar"):
-            try:
-                engine = create_engine(f"sqlite:///{CAMINHO_DB}")
-                resultado = pd.read_sql_query(text(query), engine)
-                st.dataframe(resultado, use_container_width=True)
-            except Exception as e:
-                st.error(str(e))
-
 
 # ---------------------------------------------------------------------------
 # Conclusão executiva
 # ---------------------------------------------------------------------------
 st.markdown("---")
-st.subheader("Conclusão executiva")
+st.subheader("Conclusão")
 st.markdown(
     """
-    O dashboard entrega uma leitura em três camadas sobre o comportamento dos preços de
-    combustíveis no Brasil entre 2015 e 2024: **(1)** uma visão agregada com KPIs e
-    rankings, **(2)** uma camada temporal com médias móveis, picos e vales, e
-    **(3)** cortes regionais e por combustível, incluindo volatilidade e correlações.
+    O dashboard entrega uma leitura em três camadas: **(1)** uma visão agregada com KPIs
+    e rankings, **(2)** uma camada temporal com média móvel para suavizar o ruído mensal
+    e um índice base 100 para comparar a variação acumulada entre combustíveis, e
+    **(3)** cortes regionais e por combustível com volatilidade.
 
-    A base utilizada é **simulada**, o que limita a leitura econômica dos resultados — as
-    séries foram geradas sem a estrutura real de choques (greves, câmbio, reajustes da
-    Petrobras, política de paridade). O que o projeto demonstra, por outro lado, é
-    o **ferramental completo**: tratamento com pandas, visualização com Matplotlib e
-    Seaborn, dashboard interativo com Streamlit, persistência em SQLite via SQLAlchemy,
-    filtros múltiplos, upload de arquivo e consulta SQL ao vivo — tudo pronto para ser
-    repetido sobre a Série Histórica da ANP sem reescrever o pipeline.
+    A base utilizada é **simulada**, o que limita a leitura econômica dos resultados.
+    O que o projeto demonstra é o ferramental completo (pandas + matplotlib + seaborn + Streamlit),
+    pronto para ser repetido sobre a Série Histórica real da ANP.
     """
 )
