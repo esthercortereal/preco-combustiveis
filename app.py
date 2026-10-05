@@ -17,7 +17,9 @@ from sqlalchemy import create_engine, text
 # Configuração geral
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Preços de Combustíveis no Brasil",
+    page_title="Preços de Combustíveis no Brasil
+
+Aluna: Esther dos Santos Corte Real ",
     page_icon="⛽",
     layout="wide",
     initial_sidebar_state="expanded",
