@@ -23,23 +23,167 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ---------------------------------------------------------------------------
+# Identidade visual — escura, minimalista, delicada
+# ---------------------------------------------------------------------------
+BG       = "#0e1113"
+BG_SOFT  = "#14191c"
+INK      = "#e4e1da"
+INK_SOFT = "#a7a9a4"
+INK_DIM  = "#6c706d"
+RULE     = "#1d2225"
+GOLD     = "#c9a96e"
+
 PALETA = {
-    "Gasolina": "#e85d04",
-    "Diesel":   "#6a4c93",
-    "Etanol":   "#2a9d8f",
-    "GNV":      "#118ab2",
-    "GLP":      "#d62828",
+    "Gasolina": "#c9a96e",   # dourado
+    "Diesel":   "#8fa3b8",   # azul-ardósia
+    "Etanol":   "#7fb09a",   # sálvia
+    "GNV":      "#b48ea3",   # malva
+    "GLP":      "#d0917a",   # terracota suave
 }
 
 REGIAO_CORES = {
-    "Norte":        "#2a9d8f",
-    "Nordeste":     "#e9c46a",
-    "Centro-Oeste": "#f4a261",
-    "Sudeste":      "#e76f51",
-    "Sul":          "#264653",
+    "Norte":        "#7fb09a",
+    "Nordeste":     "#c9a96e",
+    "Centro-Oeste": "#d0917a",
+    "Sudeste":      "#b48ea3",
+    "Sul":          "#8fa3b8",
 }
 
-sns.set_theme(style="whitegrid", rc={"axes.spines.top": False, "axes.spines.right": False})
+NIVEL_CORES = ["#7fb09a", "#c9a96e", "#d0917a", "#b48ea3"]  # Baixo, Médio, Alto, Crítico
+
+from matplotlib.colors import LinearSegmentedColormap
+CMAP_GOLD = LinearSegmentedColormap.from_list("gold_dark", [BG_SOFT, "#4a4030", "#8a7445", GOLD])
+CMAP_DIV  = LinearSegmentedColormap.from_list("div_dark", ["#8fa3b8", BG_SOFT, GOLD])
+
+plt.rcParams.update({
+    "figure.facecolor":  BG,
+    "axes.facecolor":    BG,
+    "savefig.facecolor": BG,
+    "axes.edgecolor":    RULE,
+    "axes.labelcolor":   INK_SOFT,
+    "axes.titlecolor":   INK,
+    "axes.titleweight":  "normal",
+    "xtick.color":       INK_DIM,
+    "ytick.color":       INK_DIM,
+    "text.color":        INK_SOFT,
+    "grid.color":        RULE,
+    "grid.linewidth":    0.6,
+    "axes.grid":         True,
+    "axes.grid.axis":    "y",
+    "axes.axisbelow":    True,
+    "axes.spines.top":   False,
+    "axes.spines.right": False,
+    "axes.spines.left":  False,
+    "legend.frameon":    False,
+    "legend.labelcolor": INK_SOFT,
+    "font.size":         9.5,
+    "axes.titlesize":    11,
+    "axes.labelsize":    9.5,
+})
+sns.set_theme(style=None, rc=plt.rcParams)
+
+st.markdown(
+    f"""
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      html, body, [class*="css"], .stApp, p, li, label, .stMarkdown {{
+        font-family: 'Inter', system-ui, sans-serif !important;
+        font-weight: 300;
+      }}
+      h1, h2, h3, h4 {{
+        font-family: 'Fraunces', serif !important;
+        font-weight: 300 !important;
+        letter-spacing: -0.01em;
+        color: {INK} !important;
+      }}
+      h1 {{ font-size: 2.3rem !important; margin-bottom: 0.2rem !important; }}
+      h2, h3 {{ font-size: 1.35rem !important; color: {INK_SOFT} !important; margin-top: 0.4rem !important; }}
+
+      /* KPIs */
+      [data-testid="stMetric"] {{
+        background: {BG_SOFT};
+        border: 1px solid {RULE};
+        padding: 14px 16px;
+        border-radius: 2px;
+      }}
+      [data-testid="stMetricLabel"] p {{
+        color: {INK_DIM} !important;
+        font-size: 0.72rem !important;
+        letter-spacing: 0.03em;
+      }}
+      [data-testid="stMetricValue"] {{
+        font-family: 'Fraunces', serif !important;
+        font-weight: 400 !important;
+        font-size: 1.6rem !important;
+        color: {INK} !important;
+      }}
+
+      /* Abas */
+      [data-testid="stTabs"] button {{
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 400;
+        color: {INK_DIM};
+        letter-spacing: 0.01em;
+      }}
+      [data-testid="stTabs"] button[aria-selected="true"] {{
+        color: {INK};
+        border-bottom-color: {GOLD} !important;
+      }}
+      [data-baseweb="tab-highlight"] {{ background-color: {GOLD} !important; }}
+      [data-baseweb="tab-border"]    {{ background-color: {RULE} !important; }}
+
+      /* Sidebar */
+      [data-testid="stSidebar"] {{
+        background: {BG_SOFT};
+        border-right: 1px solid {RULE};
+      }}
+      [data-testid="stSidebar"] h3 {{
+        font-size: 0.85rem !important;
+        color: {INK_DIM} !important;
+        letter-spacing: 0.03em;
+      }}
+
+      /* Divisores, citações, caption */
+      hr {{ border-color: {RULE} !important; margin: 1.6rem 0 !important; }}
+      blockquote {{
+        border-left: 1px solid {GOLD} !important;
+        color: {INK_SOFT} !important;
+        padding-left: 1rem !important;
+      }}
+      [data-testid="stCaptionContainer"] p {{ color: {INK_DIM} !important; }}
+
+      /* Botões */
+      .stButton button, .stDownloadButton button {{
+        background: transparent;
+        border: 1px solid {RULE};
+        color: {INK_SOFT};
+        border-radius: 2px;
+        font-weight: 400;
+      }}
+      .stButton button:hover, .stDownloadButton button:hover {{
+        border-color: {GOLD};
+        color: {GOLD};
+      }}
+
+      /* Info box mais discreta */
+      [data-testid="stAlert"] {{
+        background: {BG_SOFT};
+        border: 1px solid {RULE};
+        color: {INK_SOFT};
+      }}
+
+      /* Dataframes */
+      [data-testid="stDataFrame"] {{ border: 1px solid {RULE}; border-radius: 2px; }}
+
+      /* Esconde menu/rodapé padrão */
+      #MainMenu, footer {{ visibility: hidden; }}
+      .block-container {{ padding-top: 2.4rem; max-width: 1180px; }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 CAMINHO_CSV_PADRAO = Path(__file__).parent / "dados" / "simulacao_precos_combustiveis_brasil.csv"
 CAMINHO_DB = Path(__file__).parent / "database" / "combustiveis.db"
@@ -149,7 +293,7 @@ dff = df.loc[mask].copy()
 # ---------------------------------------------------------------------------
 # Navegação multipágina
 # ---------------------------------------------------------------------------
-st.title("Preços de combustíveis no Brasil — 2015 a 2024")
+st.title("Como o preço do combustível se move por dez anos de Brasil")
 st.caption(
     "Como gasolina, diesel, etanol, GNV e GLP evoluíram ao longo de uma década, "
     "comparando regiões, estados e a relação com inflação e cotação do petróleo."
@@ -219,7 +363,7 @@ with aba_visao:
         st.markdown("**Distribuição por nível de preço**")
         contagem = dff["nivel_preco"].value_counts().reindex(["Baixo", "Médio", "Alto", "Crítico"])
         fig, ax = plt.subplots(figsize=(6, 4))
-        cores = ["#2a9d8f", "#e9c46a", "#f4a261", "#d62828"]
+        cores = NIVEL_CORES
         ax.bar(contagem.index.astype(str), contagem.values, color=cores)
         ax.set_ylabel("Nº de observações")
         ax.set_xlabel("")
@@ -250,7 +394,7 @@ with aba_temporal:
     fig, ax = plt.subplots(figsize=(11, 5))
     for comb, grupo in serie.groupby("combustivel"):
         ax.plot(grupo["data"], grupo["preco_medio"], label=str(comb),
-                color=PALETA.get(str(comb), "#333"), linewidth=1.6)
+                color=PALETA.get(str(comb), INK_SOFT), linewidth=1.6)
     ax.set_xlabel("")
     ax.set_ylabel("Preço médio (R$/L)")
     ax.legend(frameon=False, ncol=5, loc="upper center", bbox_to_anchor=(0.5, 1.08))
@@ -263,8 +407,8 @@ with aba_temporal:
     mm3 = serie_total.rolling(3, min_periods=1).mean()
 
     fig2, ax2 = plt.subplots(figsize=(11, 4))
-    ax2.plot(serie_total.index, serie_total.values, color="#999", linewidth=1, label="Média mensal")
-    ax2.plot(mm3.index, mm3.values, color="#e85d04", linewidth=2, label="Média móvel (3m)")
+    ax2.plot(serie_total.index, serie_total.values, color=INK_DIM, linewidth=0.9, label="Média mensal")
+    ax2.plot(mm3.index, mm3.values, color=GOLD, linewidth=1.8, label="Média móvel (3m)")
     ax2.set_ylabel("R$/L")
     ax2.legend(frameon=False)
     fig2.tight_layout()
@@ -298,7 +442,7 @@ with aba_regional:
             dff.groupby("regiao")["preco_medio"].mean().sort_values(ascending=False).round(2)
         )
         fig, ax = plt.subplots(figsize=(6, 4))
-        cores = [REGIAO_CORES.get(r, "#333") for r in por_regiao.index]
+        cores = [REGIAO_CORES.get(r, INK_SOFT) for r in por_regiao.index]
         ax.barh(por_regiao.index.astype(str), por_regiao.values, color=cores)
         ax.set_xlabel("R$/L")
         for i, v in enumerate(por_regiao.values):
@@ -310,7 +454,7 @@ with aba_regional:
         st.markdown("**Ranking dos estados**")
         por_uf = dff.groupby("uf")["preco_medio"].mean().sort_values(ascending=False).round(2)
         fig, ax = plt.subplots(figsize=(6, 7))
-        ax.barh(por_uf.index.astype(str)[::-1], por_uf.values[::-1], color="#264653")
+        ax.barh(por_uf.index.astype(str)[::-1], por_uf.values[::-1], color=INK_SOFT, height=0.6)
         ax.set_xlabel("R$/L")
         fig.tight_layout()
         st.pyplot(fig, clear_figure=True)
@@ -321,7 +465,8 @@ with aba_regional:
         index="regiao", columns="combustivel", values="preco_medio", aggfunc="mean"
     ).round(2)
     fig, ax = plt.subplots(figsize=(10, 4))
-    sns.heatmap(pivot, annot=True, fmt=".2f", cmap="YlOrRd", cbar_kws={"label": "R$/L"}, ax=ax)
+    sns.heatmap(pivot, annot=True, fmt=".2f", annot_kws={"color": "#f2efe8", "size": 9}, cmap=CMAP_GOLD, cbar_kws={"label": "R$/L"}, linewidths=0.5, linecolor=BG, ax=ax)
+    ax.grid(False)
     fig.tight_layout()
     st.pyplot(fig, clear_figure=True)
 
@@ -340,8 +485,8 @@ with aba_combustivel:
         sns.boxplot(
             data=dff, x="combustivel", y="preco_medio",
             order=ordem,
-            palette=[PALETA.get(c, "#333") for c in ordem],
-            ax=ax,
+            palette=[PALETA.get(c, INK_SOFT) for c in ordem],
+            ax=ax, linewidth=0.8, fliersize=2,
         )
         ax.set_xlabel("")
         ax.set_ylabel("R$/L")
@@ -355,7 +500,7 @@ with aba_combustivel:
             .groupby("combustivel").mean().sort_values(ascending=False).round(3)
         )
         fig, ax = plt.subplots(figsize=(7, 4.5))
-        cores = [PALETA.get(str(c), "#333") for c in vol.index]
+        cores = [PALETA.get(str(c), INK_SOFT) for c in vol.index]
         ax.bar(vol.index.astype(str), vol.values, color=cores)
         ax.set_ylabel("Desvio padrão médio")
         for i, v in enumerate(vol.values):
@@ -372,8 +517,8 @@ with aba_combustivel:
     fig, ax = plt.subplots(figsize=(11, 4.5))
     for comb, grupo in base.groupby("combustivel"):
         ax.plot(grupo["data"], grupo["indice"], label=str(comb),
-                color=PALETA.get(str(comb), "#333"), linewidth=1.6)
-    ax.axhline(100, color="#999", linewidth=0.8, linestyle="--")
+                color=PALETA.get(str(comb), INK_SOFT), linewidth=1.6)
+    ax.axhline(100, color=INK_DIM, linewidth=0.7, linestyle="--")
     ax.set_ylabel("Índice (início = 100)")
     ax.legend(frameon=False, ncol=5, loc="upper center", bbox_to_anchor=(0.5, 1.1))
     fig.tight_layout()
@@ -397,21 +542,22 @@ with aba_correlacao:
     with col1:
         st.markdown("**Matriz de correlação**")
         fig, ax = plt.subplots(figsize=(5, 4))
-        sns.heatmap(agg.corr().round(2), annot=True, cmap="RdBu_r",
-                    vmin=-1, vmax=1, center=0, ax=ax)
+        sns.heatmap(agg.corr().round(2), annot=True, annot_kws={"color": "#f2efe8", "size": 9}, cmap=CMAP_DIV,
+                    vmin=-1, vmax=1, center=0, linewidths=0.5, linecolor=BG, ax=ax)
+        ax.grid(False)
         fig.tight_layout()
         st.pyplot(fig, clear_figure=True)
 
     with col2:
         st.markdown("**Preço médio × cotação do petróleo**")
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.scatter(agg["petroleo"], agg["preco"], alpha=0.5, color="#e85d04", s=25)
+        ax.scatter(agg["petroleo"], agg["preco"], alpha=0.6, color=GOLD, s=22, edgecolors="none")
         ax.set_xlabel("Cotação do petróleo (US$)")
         ax.set_ylabel("Preço médio (R$/L)")
         if len(agg) > 1:
             m, b = np.polyfit(agg["petroleo"], agg["preco"], 1)
             xs = np.linspace(agg["petroleo"].min(), agg["petroleo"].max(), 50)
-            ax.plot(xs, m * xs + b, color="#264653", linewidth=1.2, linestyle="--",
+            ax.plot(xs, m * xs + b, color=INK_SOFT, linewidth=1, linestyle="--",
                     label=f"ajuste linear (r = {agg['petroleo'].corr(agg['preco']):.2f})")
             ax.legend(frameon=False)
         fig.tight_layout()
