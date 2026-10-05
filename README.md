@@ -1,5 +1,7 @@
 # Preços de combustíveis no Brasil — 2015 a 2024
 
+Aluna: Esther dos Santos Corte Real 
+
 Projeto G2 • Tema 11 • **Análise e Visualização de Dados com Python**
 
 Análise exploratória e dashboard interativo sobre a variação dos preços de gasolina, diesel, etanol, GNV e GLP no Brasil, por região, estado e ano, com base no dataset simulado fornecido pelo professor.
