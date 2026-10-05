@@ -2,6 +2,7 @@
 
 Aluna: Esther dos Santos Corte Real 
 Professor: Alexandre Louzada 
+
 Matéria: Linguagens de Programação 
 
 Projeto G2 • Tema 11 • **Análise e Visualização de Dados com Python**
